@@ -1,0 +1,558 @@
+[
+  {
+    "id": "4dbff38d.d42fac",
+    "type": "api-current-state",
+    "z": "58e2e9ed.b61558",
+    "name": "read speakers state",
+    "server": "76f55c32.079c14",
+    "outputs": 1,
+    "halt_if": "",
+    "halt_if_type": "str",
+    "halt_if_compare": "is",
+    "override_topic": false,
+    "entity_id": "media_player.speakers",
+    "state_type": "str",
+    "state_location": "payload",
+    "override_payload": "msg",
+    "entity_location": "data",
+    "override_data": "msg",
+    "x": 290,
+    "y": 1180,
+    "wires": [
+      [
+        "c9024faa.49e3b"
+      ]
+    ]
+  },
+  {
+    "id": "6a9cb8b9.71d498",
+    "type": "rbe",
+    "z": "58e2e9ed.b61558",
+    "name": "detect change",
+    "func": "rbe",
+    "gap": "",
+    "start": "",
+    "inout": "out",
+    "property": "payload",
+    "x": 280,
+    "y": 1280,
+    "wires": [
+      [
+        "b0bd5641.b2e188"
+      ]
+    ]
+  },
+  {
+    "id": "c54fa678.6e4a98",
+    "type": "inject",
+    "z": "58e2e9ed.b61558",
+    "name": "every 1s",
+    "topic": "",
+    "payload": "",
+    "payloadType": "date",
+    "repeat": "1",
+    "crontab": "",
+    "once": false,
+    "onceDelay": 0.1,
+    "x": 100,
+    "y": 1180,
+    "wires": [
+      [
+        "4dbff38d.d42fac"
+      ]
+    ]
+  },
+  {
+    "id": "145d27ef.796cb8",
+    "type": "function",
+    "z": "58e2e9ed.b61558",
+    "name": "extract Spotify track ID",
+    "func": "const m = msg.payload.match(/^spotify:track:([A-Za-z0-9]+)$/);\nmsg.params = [m[1]];\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 760,
+    "y": 1320,
+    "wires": [
+      [
+        "8009277f.363748"
+      ]
+    ]
+  },
+  {
+    "id": "b0bd5641.b2e188",
+    "type": "switch",
+    "z": "58e2e9ed.b61558",
+    "name": "match content ID",
+    "property": "payload",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "regex",
+        "v": "spotify:track:([A-Za-z0-9]+)",
+        "vt": "str",
+        "case": false
+      },
+      {
+        "t": "else"
+      }
+    ],
+    "checkall": "true",
+    "repair": false,
+    "outputs": 2,
+    "x": 470,
+    "y": 1280,
+    "wires": [
+      [
+        "145d27ef.796cb8"
+      ],
+      [
+        "3ecc581b.19c948"
+      ]
+    ],
+    "inputLabels": [
+      "spotify"
+    ]
+  },
+  {
+    "id": "82f75e4c.ac041",
+    "type": "spotify",
+    "z": "58e2e9ed.b61558",
+    "name": "",
+    "auth": "33fe6c5f.705664",
+    "api": "getAudioFeaturesForTrack",
+    "x": 780,
+    "y": 1400,
+    "wires": [
+      [
+        "92671f60.2eba4",
+        "f2fe94d.5fa3768"
+      ]
+    ]
+  },
+  {
+    "id": "f2fe94d.5fa3768",
+    "type": "function",
+    "z": "58e2e9ed.b61558",
+    "name": "extract message",
+    "func": "msg.payload = {\n    data: {\n        message: `dance ${Math.round(msg.payload.danceability * 10)}, energy ${Math.round(msg.payload.energy * 10)}, happiness: ${Math.round(msg.payload.valence * 10)}`,\n    },\n};\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 1020,
+    "y": 1440,
+    "wires": [
+      [
+        "2bef8a34.1f46e6"
+      ]
+    ]
+  },
+  {
+    "id": "eb36ec0f.635e8",
+    "type": "http request",
+    "z": "58e2e9ed.b61558",
+    "name": "tell HomeStage song",
+    "method": "POST",
+    "ret": "obj",
+    "paytoqs": false,
+    "url": "http://localhost:8923/api/media/",
+    "tls": "",
+    "proxy": "",
+    "authType": "basic",
+    "x": 1040,
+    "y": 1480,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "c2fab195.21c62",
+    "type": "function",
+    "z": "58e2e9ed.b61558",
+    "name": "msg.payload = msg.media",
+    "func": "msg.payload = msg.media;\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 780,
+    "y": 1440,
+    "wires": [
+      [
+        "eb36ec0f.635e8"
+      ]
+    ]
+  },
+  {
+    "id": "5b1826e6.4dc728",
+    "type": "comment",
+    "z": "58e2e9ed.b61558",
+    "name": "program stage lights to the music",
+    "info": "",
+    "x": 170,
+    "y": 1140,
+    "wires": []
+  },
+  {
+    "id": "6b6cd4b7.fe619c",
+    "type": "http request",
+    "z": "58e2e9ed.b61558",
+    "name": "tell HomeStage",
+    "method": "POST",
+    "ret": "obj",
+    "paytoqs": false,
+    "url": "http://localhost:8923/api/enabled/",
+    "tls": "",
+    "proxy": "",
+    "authType": "basic",
+    "x": 540,
+    "y": 1580,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "c4fb240f.b80a88",
+    "type": "change",
+    "z": "58e2e9ed.b61558",
+    "name": "enabled = false",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "{\"enabled\": false}",
+        "tot": "json"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 320,
+    "y": 1560,
+    "wires": [
+      [
+        "6b6cd4b7.fe619c"
+      ]
+    ]
+  },
+  {
+    "id": "ce6e845.c532178",
+    "type": "change",
+    "z": "58e2e9ed.b61558",
+    "name": "enabled = true",
+    "rules": [
+      {
+        "t": "set",
+        "p": "payload",
+        "pt": "msg",
+        "to": "{\"enabled\": true}",
+        "tot": "json"
+      }
+    ],
+    "action": "",
+    "property": "",
+    "from": "",
+    "to": "",
+    "reg": false,
+    "x": 320,
+    "y": 1600,
+    "wires": [
+      [
+        "6b6cd4b7.fe619c"
+      ]
+    ]
+  },
+  {
+    "id": "42e602d.944abfc",
+    "type": "server-state-changed",
+    "z": "58e2e9ed.b61558",
+    "name": "stage turned off",
+    "server": "76f55c32.079c14",
+    "entityidfilter": "switch.stage",
+    "entityidfiltertype": "exact",
+    "outputinitially": false,
+    "state_type": "habool",
+    "haltifstate": "false",
+    "halt_if_type": "bool",
+    "halt_if_compare": "is",
+    "outputs": 2,
+    "output_only_on_state_change": true,
+    "x": 120,
+    "y": 1560,
+    "wires": [
+      [],
+      [
+        "c4fb240f.b80a88"
+      ]
+    ]
+  },
+  {
+    "id": "6cd16cf8.bea794",
+    "type": "server-state-changed",
+    "z": "58e2e9ed.b61558",
+    "name": "stage turned on",
+    "server": "76f55c32.079c14",
+    "entityidfilter": "switch.stage",
+    "entityidfiltertype": "exact",
+    "outputinitially": false,
+    "state_type": "habool",
+    "haltifstate": "true",
+    "halt_if_type": "bool",
+    "halt_if_compare": "is",
+    "outputs": 2,
+    "output_only_on_state_change": true,
+    "x": 120,
+    "y": 1600,
+    "wires": [
+      [],
+      [
+        "ce6e845.c532178"
+      ]
+    ]
+  },
+  {
+    "id": "a0f8ce5d.4bfa1",
+    "type": "function",
+    "z": "58e2e9ed.b61558",
+    "name": "copy analysis info to msg.analysis",
+    "func": "msg.analysis = msg.payload;\nmsg.media = {\n    ...(msg.media || {}),\n    analysis: {\n        ...(msg.media.analysis || {}),\n        ...msg.payload,\n    },\n};\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 1040,
+    "y": 1360,
+    "wires": [
+      [
+        "82f75e4c.ac041"
+      ]
+    ]
+  },
+  {
+    "id": "8009277f.363748",
+    "type": "spotify",
+    "z": "58e2e9ed.b61558",
+    "name": "",
+    "auth": "33fe6c5f.705664",
+    "api": "getAudioAnalysisForTrack",
+    "x": 770,
+    "y": 1360,
+    "wires": [
+      [
+        "a0f8ce5d.4bfa1"
+      ]
+    ]
+  },
+  {
+    "id": "2c8082be.a41b5e",
+    "type": "function",
+    "z": "58e2e9ed.b61558",
+    "name": "extract media_content_id, media: {...}",
+    "func": "msg.payload = msg.data.attributes.media_content_id;\nmsg.media = {\n    title: msg.data.attributes.media_title,\n    artist: msg.data.attributes.media_artist,\n    uri: msg.data.attributes.media_content_id,\n    type: msg.data.attributes.media_content_type,\n    start_datetime: {\n        elapsed: msg.data.attributes.media_position,\n        at: msg.data.attributes.media_position_updated_at,\n    },\n};\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 350,
+    "y": 1240,
+    "wires": [
+      [
+        "6a9cb8b9.71d498",
+        "ea26bdda.a3561"
+      ]
+    ]
+  },
+  {
+    "id": "92671f60.2eba4",
+    "type": "function",
+    "z": "58e2e9ed.b61558",
+    "name": "copy features info to msg.features",
+    "func": "msg.features = msg.payload;\nmsg.media = {\n    ...(msg.media || {}),\n    analysis: {\n        ...(msg.media.analysis || {}),\n        ...msg.payload,\n    },\n};\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 1080,
+    "y": 1400,
+    "wires": [
+      [
+        "c2fab195.21c62"
+      ]
+    ]
+  },
+  {
+    "id": "d54f811b.31c75",
+    "type": "function",
+    "z": "58e2e9ed.b61558",
+    "name": "prepare position",
+    "func": "msg.payload = msg.media.start_datetime;\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 900,
+    "y": 1220,
+    "wires": [
+      [
+        "3a196927.e1e096"
+      ]
+    ]
+  },
+  {
+    "id": "ea26bdda.a3561",
+    "type": "delay",
+    "z": "58e2e9ed.b61558",
+    "name": "",
+    "pauseType": "rate",
+    "timeout": "5",
+    "timeoutUnits": "seconds",
+    "rate": "1",
+    "nbRateUnits": "1",
+    "rateUnits": "second",
+    "randomFirst": "1",
+    "randomLast": "5",
+    "randomUnits": "seconds",
+    "drop": false,
+    "x": 730,
+    "y": 1220,
+    "wires": [
+      [
+        "d54f811b.31c75"
+      ]
+    ]
+  },
+  {
+    "id": "3a196927.e1e096",
+    "type": "http request",
+    "z": "58e2e9ed.b61558",
+    "name": "tell HomeStage position",
+    "method": "POST",
+    "ret": "obj",
+    "paytoqs": false,
+    "url": "http://localhost:8923/api/media/position/",
+    "tls": "",
+    "proxy": "",
+    "authType": "basic",
+    "x": 1110,
+    "y": 1220,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "21764672.5b773a",
+    "type": "http request",
+    "z": "58e2e9ed.b61558",
+    "name": "tell HomeStage song",
+    "method": "POST",
+    "ret": "obj",
+    "paytoqs": false,
+    "url": "http://localhost:8923/api/playing/",
+    "tls": "",
+    "proxy": "",
+    "authType": "basic",
+    "x": 480,
+    "y": 1380,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "3ecc581b.19c948",
+    "type": "function",
+    "z": "58e2e9ed.b61558",
+    "name": "set basic data",
+    "func": "msg.payload = {\n};\n\nreturn msg;",
+    "outputs": 1,
+    "noerr": 0,
+    "x": 280,
+    "y": 1380,
+    "wires": [
+      [
+        "21764672.5b773a"
+      ]
+    ]
+  },
+  {
+    "id": "c9024faa.49e3b",
+    "type": "switch",
+    "z": "58e2e9ed.b61558",
+    "name": "check not off",
+    "property": "data.state",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "neq",
+        "v": "off",
+        "vt": "str"
+      }
+    ],
+    "checkall": "true",
+    "repair": false,
+    "outputs": 1,
+    "x": 470,
+    "y": 1180,
+    "wires": [
+      [
+        "2c8082be.a41b5e"
+      ]
+    ]
+  },
+  {
+    "id": "4d48af63.8317b",
+    "type": "comment",
+    "z": "58e2e9ed.b61558",
+    "name": "push current song position",
+    "info": "",
+    "x": 770,
+    "y": 1180,
+    "wires": []
+  },
+  {
+    "id": "ebe6dc8e.3d354",
+    "type": "comment",
+    "z": "58e2e9ed.b61558",
+    "name": "push song data w/ Spotify track analysis",
+    "info": "",
+    "x": 810,
+    "y": 1280,
+    "wires": []
+  },
+  {
+    "id": "21cc87a8.0b9d98",
+    "type": "comment",
+    "z": "58e2e9ed.b61558",
+    "name": "push basic song data",
+    "info": "",
+    "x": 300,
+    "y": 1340,
+    "wires": []
+  },
+  {
+    "id": "2bef8a34.1f46e6",
+    "type": "api-call-service",
+    "z": "58e2e9ed.b61558",
+    "name": "tts",
+    "server": "76f55c32.079c14",
+    "service_domain": "tts",
+    "service": "google_say",
+    "data": "{\"entity_id\":\"media_player.little_otto\"}",
+    "mergecontext": "",
+    "output_location": "",
+    "output_location_type": "none",
+    "x": 1190,
+    "y": 1440,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "76f55c32.079c14",
+    "type": "server",
+    "z": "",
+    "name": "Home Assistant",
+    "legacy": false,
+    "hassio": false,
+    "rejectUnauthorizedCerts": false,
+    "ha_boolean": "y|yes|true|on|home|open",
+    "connectionDelay": true
+  },
+  {
+    "id": "33fe6c5f.705664",
+    "type": "spotify-auth",
+    "z": "",
+    "name": "Spotify OAuth2",
+    "scope": "user-read-recently-played\nuser-top-read\nuser-library-modify\nuser-library-read\nplaylist-read-private\nplaylist-read-collaborative\nuser-read-email\nuser-read-birthdate\nuser-read-private\nuser-read-playback-state\nuser-modify-playback-state\nuser-read-currently-playing\napp-remote-control\nstreaming\nuser-follow-read\nuser-follow-modify"
+  }
+]
