@@ -1,6 +1,6 @@
 # HomeStage
 
-Let's say you a little home automation going on, like enjoying music and happen to own some stage lights, and you want to make it a 🔥 music room.
+Let's say you have a little home automation going on, like enjoying music and happen to own some stage lights, and you want to make it a 🔥 music room.
 
 WELCOME TO HOMESTAGE.
 
