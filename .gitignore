@@ -1,3 +1,4 @@
 .idea
 *.qxw
-config.py
+config.json
+*.pyc

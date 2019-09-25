@@ -1,0 +1,13 @@
+.spectrum {
+  display: flex;
+  height: 5rem;
+  align-items: flex-end;
+}
+
+.spectrum-bar {
+  width: 1.2rem;
+  margin-left: 1px;
+  display: inline-block;
+  background: $spectrum-bar-bg;
+  border-radius: $spectrum-border-radius;
+}

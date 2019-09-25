@@ -59,6 +59,9 @@ class Section(Timing):
         self.loudness = loudness
         self.tempo = tempo
 
+    def __str__(self):
+        return f"Section(duration={self.duration}, loudness={self.loudness}, tempo={self.tempo})"
+
 
 class Segment(Timing):
     def __init__(self, start: float, duration: float, loudness_start: Optional[float] = None,
@@ -72,6 +75,9 @@ class Segment(Timing):
         self.loudness_end = loudness_end
         self.pitches = pitches
         self.timbre = timbre
+
+    def __str__(self):
+        return f"Segment(duration={self.duration}, loudness_max={self.loudness_max}, loudness_max_time={self.loudness_max_time}, pitches={self.pitches}, timbre={self.timbre})"
 
 
 class Analysis:
@@ -165,7 +171,7 @@ class AnalysisSchema(Schema):
 
 class StartDateTimeSchema(Schema):
     elapsed = fields.Float(required=True)
-    at = fields.LocalDateTime(required=True)
+    at = fields.AwareDateTime(required=True)
 
     @post_load
     def construct(self, data):

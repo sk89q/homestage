@@ -1,32 +1,34 @@
 import argparse
 import logging
 
-import sacn
-
-import config
 from homestage.api import WebServer
-from homestage.controller import AudioState, HomeStage
+from homestage.controller import HomeStage, StageConfig
+from homestage.outputs import PatchedsACNSender
 
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--config', default='config.json')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s (%(levelname)s) [%(name)s] %(message)s",
                         datefmt="%H:%M:%S")
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    logging.getLogger('socketio.server').setLevel(logging.ERROR)
+    logging.getLogger('engineio.server').setLevel(logging.ERROR)
 
-    sender = sacn.sACNsender(fps=120)
-    sender.activate_output(1)
-    sender[1].multicast = config.SACN_MULTICAST
-    sender[1].destination = config.SACN_HOST
+    config = StageConfig(args.config)
+    config.load()
+    config.save()
 
-    listener = AudioState(config.RECORDING_DEVICE)
-    stage = HomeStage(config.DEVICES, sender, listener)
-    server = WebServer(stage, config.WEB_SERVER_HOST, config.WEB_SERVER_PORT)
+    output = PatchedsACNSender(fps=60, bind_address=config.sacn_bind_address)
+    output.activate_output(config.sacn_universe)
+    output[config.sacn_universe].multicast = config.sacn_multicast
+    output[config.sacn_universe].destination = config.sacn_destination
+    stage = HomeStage(config, config.fixtures, output)
+    server = WebServer(stage)
 
-    listener.start()
     stage.start()
     server.start()
 
