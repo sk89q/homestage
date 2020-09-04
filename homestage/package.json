@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "bootstrap": "^4.3.1",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "mobx": "^5.1.2",
     "mobx-react": "^5.2.8",
     "mobx-utils": "^5.0.2",
