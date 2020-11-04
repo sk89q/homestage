@@ -1,6 +1,8 @@
 import argparse
 import logging
 
+from engineio.payload import Payload
+
 from homestage.api import WebServer
 from homestage.controller import HomeStage, StageConfig
 from homestage.outputs import PatchedsACNSender
@@ -22,6 +24,7 @@ def main():
     config.load()
     config.save()
 
+    Payload.max_decode_packets = 500
     output = PatchedsACNSender(fps=60, bind_address=config.sacn_bind_address)
     output.activate_output(config.sacn_universe)
     output[config.sacn_universe].multicast = config.sacn_multicast

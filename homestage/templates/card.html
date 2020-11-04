@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <title>HomeStage Control</title>
+  <link type="text/css" rel="stylesheet" href="/static/css/card.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+</head>
+<body>
+<h1>Current Rave Program</h1>
+<form action="/card/next" method="post">
+  <div class="current-pattern">{{ current_pattern }}</div>
+  <button class="next-button">Rotate Program</button>
+</form>
+</body>
+</html>

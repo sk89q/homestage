@@ -1,8 +1,9 @@
+import math
 import random
 import time
 from colorsys import hsv_to_rgb
+from typing import List, Tuple
 
-import math
 import numpy as np
 
 
@@ -42,24 +43,24 @@ class DelegatePattern:
 
 
 class RainbowRoundabout(Pattern):
-    def __init__(self, state, control):
+    def __init__(self, state, control, factor=1):
         self.state = state
         self.control = control
         self.index = 0
         self.last_beat = time.time()
         self.tempo_beat = 0
+        self.factor = factor
 
     def on_segment_change(self, segment):
         self.index += 0.2 * math.log(segment.duration * 10)
 
     def update(self, fixtures):
         now = time.time()
-        color = hsv_to_rgb(math.sin(self.index) / 2 + 0.5, 1, 1)
+        color = hsv_to_rgb(math.sin(self.index * self.factor) / 2 + 0.5, 1, 1)
 
         for i, fixture in enumerate(fixtures):
             active = True
-            fixture.pan = int((cycle(4) / 6 + 2 / 6) * (2 / 3 * 255))
-            # fixture.tilt = int((cycle(2) / 8 + 7 / 8) * 255)
+            fixture.pan = int((cycle(4 * (1 if i % 2 else -1)) / 6 + 2 / 6) * (2 / 3 * 255))
             fixture.tilt = int((cycle(2) / 8 + 5 / 8) * 255)
             fixture.r = int(255 * color[0])
             fixture.g = int(255 * color[1])
@@ -136,6 +137,24 @@ class BloodPumper(Pattern):
         return False
 
 
+class PatternList(DelegatePattern):
+    def __init__(self, state, control, patterns: List[Tuple[str, Pattern]]):
+        super().__init__(patterns[0][1])
+        self.name = patterns[0][0]
+        self.patterns = patterns
+        self.pattern_index = 0
+        self.state = state
+        self.control = control
+
+    def next_pattern(self):
+        if self.pattern_index >= len(self.patterns) - 1:
+            self.pattern_index = 0
+        else:
+            self.pattern_index += 1
+        self.delegate = self.patterns[self.pattern_index][1]
+        self.name = self.patterns[self.pattern_index][0]
+
+
 class ControllablePattern(DelegatePattern):
     def __init__(self, state, control):
         super().__init__(RainbowRoundabout(state, control))
@@ -199,27 +218,27 @@ class ControllablePattern(DelegatePattern):
 
 
 class DualToneResponseFastSweep(Pattern):
-    def __init__(self, state):
+    def __init__(self, state, colors):
         self.state = state
         self.last_pulse = 0
-        self.color = hsv_to_rgb(math.sin(time.time() * 5) * 0.5 + 0.5, 1, 1)
-        self.colors = [hsv_to_rgb(random.random(), 1, 1), hsv_to_rgb(random.random(), 1, 1)]
+        self.colors = colors
+        self.color = self.colors[0]
         self.color_index = 0
 
     def update(self, fixtures):
         now = time.time()
         tempo = self.state.current_tempo
 
-        if tempo > 0 and (self.state.beat or now - self.last_pulse > 60 / (tempo * 1)):
+        if tempo > 0 and (now - self.last_pulse > 60 / (tempo * 1)):
             self.last_pulse = now
             self.color = self.colors[self.color_index]
             self.color_index += 1
             if self.color_index >= len(self.colors):
                 self.color_index = 0
 
-        for fixture in fixtures:
-            fixture.pan = int((math.sin(time.time() / 1) * 255 / 2 + 255 / 2))
-            fixture.tilt = int((math.sin(time.time() / 1) * 255 / 2 + 255 / 2))
+        for i, fixture in enumerate(fixtures):
+            fixture.pan = int((cycle(4 * (1 if i % 2 else -1)) / 6 + 2 / 6) * (2 / 3 * 255))
+            fixture.tilt = int((cycle(2) / 8 + 5 / 8) * 255)
             fixture.r = int(255 * self.color[0])
             fixture.g = int(255 * self.color[1])
             fixture.b = int(255 * self.color[2])
@@ -231,11 +250,10 @@ class DualToneResponseFastSweep(Pattern):
 
 class GrayResponseFastSweep(DualToneResponseFastSweep):
     def __init__(self, state):
-        super().__init__(state)
+        super().__init__(state, [hsv_to_rgb(random.random(), 1, 1), hsv_to_rgb(random.random(), 1, 1)])
         self.state = state
         self.last_pulse = 0
         self.color = hsv_to_rgb(math.sin(time.time() * 5) * 0.5 + 0.5, 1, 1)
-        self.colors = [hsv_to_rgb(random.random(), 1, 1), hsv_to_rgb(random.random(), 1, 1)]
         self.color_index = 0
 
     def update(self, fixtures):

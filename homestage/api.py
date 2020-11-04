@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect
 from flask_socketio import SocketIO, emit
 
 from homestage.controller import HomeStage
@@ -75,6 +75,15 @@ class WebServer:
         @app.route('/')
         def control():
             return render_template('ui.html')
+
+        @app.route('/card', methods=['get'])
+        def card():
+            return render_template('card.html', current_pattern=self.stage.controller.pattern.name)
+
+        @app.route('/card/next', methods=['post'])
+        def next_card():
+            self.stage.controller.pattern.next_pattern()
+            return redirect('/card')
 
         @socketio.on('initialize')
         def initialize(message):

@@ -1,4 +1,3 @@
-import itertools
 import json
 import logging
 import secrets
@@ -194,7 +193,13 @@ class PatternController:
 
     def __init__(self, state: AudioState, control: ControlState):
         self.state = state
-        self.pattern = ControllablePattern(state, control)
+        self.pattern = PatternList(state, control, [
+            ('Beat Match (Rainbow)', DualToneResponseFastSweep(state, [[1, 0, 0], [1, 0.5, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1]])),
+            ('Regular Rainbow', RainbowRoundabout(state, control)),
+            ('Beat Match (Purple + Red)', DualToneResponseFastSweep(state, [[1, 0, 1], [1, 0, 0]])),
+            ('Beat Match (Green + Yellow)', DualToneResponseFastSweep(state, [[0, 1, 0], [1, 1, 0]])),
+            ('THE GOOD STUFF', RainbowRoundabout(state, control, 10)),
+        ])
         self.last_media = None
         self.last_section = None
         self.last_segment = None
