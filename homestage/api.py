@@ -83,7 +83,7 @@ class WebServer:
         @app.route('/card/next', methods=['post'])
         def next_card():
             self.stage.controller.pattern.next_pattern()
-            return redirect('/card')
+            return card()
 
         @socketio.on('initialize')
         def initialize(message):
